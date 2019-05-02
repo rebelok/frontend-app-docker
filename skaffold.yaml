@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/rebelok/frontend-app-docker:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/rebelok/frontend-app-docker:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: frontend-app-docker
+        chartPath: charts/frontend-app-docker
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/rebelok/frontend-app-docker'
+          image.tag: '{{.DIGEST_HEX}}'
